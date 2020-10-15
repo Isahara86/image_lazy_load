@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    img {
+        min-height: 900px;
+        height: auto;
+        width: 100vw;
+    }
+
+    .my-img {
+        width: 900px;
+        height: 400px;
+        background: url("./images/3840x2160(4).jpg") no-repeat center;
+        background-size: contain;
+    }
+
+    html body .lazyload-bg {
+        background: azure !important;
+    }
+
+
+</style>
+<body>
+
+
+<!--<img srcset="./images/31192.jpg 320w,-->
+<!--             ./images/31189.jpg 480w,-->
+<!--             ./images/31190.jpg 800w"-->
+<!--     sizes="(max-width: 320px) 280px,-->
+<!--            (max-width: 480px) 440px,-->
+<!--            800px"-->
+<!--     src="./images/instagram-placeholder.png">-->
+
+
+<picture>
+    <source media="(min-width: 800px)" data-img-srcset="./images/3840x2160(2).jpg">
+    <source media="(min-width: 480px)" data-img-srcset="./images/3840x2160(3).jpg">
+    <source media="(min-width: 320px)" data-img-srcset="./images/3840x2160(4).jpg">
+    <img src="./images/instagram-placeholder.png">
+</picture>
+
+
+<img src="./images/instagram-placeholder.png" data-img-src="./images/3840x2160(3).jpg">
+<img src="./images/instagram-placeholder.png" data-img-src="./images/3840x2160(4).jpg">
+<img src="./images/instagram-placeholder.png" data-img-src="./images/3840x2160.jpeg">
+<img src="./images/instagram-placeholder.png" data-img-src="./images/3840x2160.jpg">
+<img src="./images/instagram-placeholder.png" data-img-src="./images/16504.jpg">
+<img src="./images/instagram-placeholder.png" data-img-src="./images/31189.jpg">
+<img src="./images/instagram-placeholder.png" data-img-src="./images/31190.jpg">
+<img src="./images/instagram-placeholder.png" data-img-src="./images/31192.jpg">
+
+<picture>
+    <source data-img-srcset="https://d3pxw3l8cozu05.cloudfront.net/uploads/blog_article_avatars/aeef984f232c86ea24fb12001db14c7b90edb315.webp?1571121551"
+            type="image/webp">
+    <source data-img-srcset="https://d3pxw3l8cozu05.cloudfront.net/uploads/blog_article_avatars/0d0da512d9da63db0db1c2448fdf34850f742fd9.png?1571121551">
+    <img src="./images/instagram-placeholder.png">
+</picture>
+
+
+<!-- LAZY LOAD CSS IMAGES -->
+<div class="my-img lazyload-bg"></div>
+
+
+<script>
+    function initImagesLazyLoading() {
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '50%',
+            threshold: 0,
+        };
+
+        initImages(observerOptions);
+        initPictures(observerOptions);
+
+
+        function initImages(observerOptions) {
+            const observer = new IntersectionObserver(observeImageCallback, observerOptions);
+
+            const allImages = document.querySelectorAll('[data-img-src]');
+            const imgs = [].filter.call(allImages, i => i.dataset.imgSrc !== i.src);  // prevent to watch loaded images
+            let imgCounter = 0;
+            for (let i = 0; i < imgs.length; i++) {
+                observer.observe(imgs[i]);
+            }
+
+            function observeImageCallback(entries, observer) {
+                for (let i = 0; i < entries.length; i++) {
+                    if (entries[i].isIntersecting) {
+                        const img = entries[i].target;
+                        img.src = img.dataset.imgSrc;
+
+                        observer.unobserve(img);
+                        imgCounter++;
+                        if (imgCounter === imgs.length) {
+                            observer.disconnect();
+                            // alert('disconnect images');
+                        }
+                    }
+                }
+            }
+        }
+
+        function initPictures(observerOptions) {
+            const observer = new IntersectionObserver(observeImageCallback, observerOptions);
+
+            const allPictures = document.querySelectorAll('picture');
+            const pictures = [].filter.call(allPictures, p => {
+                    // prevent to watch loaded images
+                    const source = p.querySelector('[data-img-srcset]');
+                    return source.dataset.imgSrcset !== source.srcset;
+                }
+            );
+
+
+            let sourcesCounter = 0;
+            for (let i = 0; i < pictures.length; i++) {
+                observer.observe(pictures[i].querySelector('img'));
+            }
+
+            function observeImageCallback(entries, observer) {
+                for (let i = 0; i < entries.length; i++) {
+                    if (entries[i].isIntersecting) {
+                        const picture = entries[i].target.parentNode;
+
+                        const sources = picture.querySelectorAll('[data-img-srcset]');
+                        for (let j = 0; j < sources.length; j++) {
+                            const source = sources[j];
+                            source.setAttribute('srcset', source.dataset.imgSrcset);
+                        }
+
+                        observer.unobserve(entries[i].target);
+                        sourcesCounter++;
+                        if (sourcesCounter === pictures.length) {
+                            observer.disconnect();
+                            // alert('disconnect pictures');
+                        }
+                    }
+                }
+            }
+        }
+
+        // const lazyloadBackgroungs = document.querySelectorAll('.lazyload-bg');
+        // for (let i = 0; i < lazyloadBackgroungs.length; i++) {
+        //     const lazyloadBackgroung = lazyloadBackgroungs[i];
+        //     lazyloadBackgroung.classList.remove('lazyload-bg')
+        // }
+
+    }
+
+
+    window.addEventListener('DOMContentLoaded', initImagesLazyLoading, {once: true});
+</script>
+
+</body>
+</html>
