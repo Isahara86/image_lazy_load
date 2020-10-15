@@ -112,6 +112,9 @@
             const pictures = [].filter.call(allPictures, p => {
                     // prevent to watch loaded images
                     const source = p.querySelector('[data-img-srcset]');
+                    if (!source) {
+                        return;
+                    }
                     return source.dataset.imgSrcset !== source.srcset;
                 }
             );
